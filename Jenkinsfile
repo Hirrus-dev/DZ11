@@ -1,17 +1,13 @@
 pipeline {
     agent any
     stages{
-        stage ('git'){
+        stage ('Build'){
+            agent{
+                docker { image 'maven:3-alpine'}
+            }
             steps{
                 git 'https://github.com/Hirrus-dev/boxfuse.git'
-            }
-        }
-        stage ('build'){
-            steps{
-                withMaven(maven:'m-3'){
-                    sh "mvn clean verify"
-                }
-                
+                sh "mvn clean verify"
             }
         }
         stage ('public'){
@@ -20,6 +16,18 @@ pipeline {
                     docker.withRegistry('http://localhost:5000') {
                         def customImage = docker.build("my-image")
                         /* Push the container to the custom Registry */
+                        customImage.push()
+                    }
+                }
+            }
+        }
+    }
+    /*stages{
+        stage ('public'){
+            steps{
+                script{
+                    docker.withRegistry('http://localhost:5000') {
+                        def customImage = docker.build("my-image")
                         customImage.push()
                     }
                 }
@@ -40,5 +48,5 @@ pipeline {
                 }
             }
         }
-    }
+    }*/
 }
